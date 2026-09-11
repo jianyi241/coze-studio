@@ -1,0 +1,171 @@
+# Lightweight ontology for Coze Studio hybrid RAG demo
+# Scope: software / agent-platform knowledge (narrow, ~demo-sized)
+# Formalism: types + properties + domain/range + closed-world constraints (no OWL DL)
+# Version: 0.1.0  |  2026-09-11
+
+meta:
+  id: coze.lite.software_kb
+  name: Software Knowledge Lite
+  language: zh-CN
+  namespace: https://example.local/onto/software-kb#
+  design_notes:
+    - Keep ≤8 classes and ≤12 relations for MVP
+    - Validate with closed-world checks (reject illegal triples), not OWL reasoner
+    - Every instance must carry provenance.chunk_id / document_id
+
+classes:
+  - id: Concept
+    label: 概念
+    description: 领域术语或抽象概念
+    aliases_attr: aliases
+  - id: Component
+    label: 组件
+    description: 可部署或可引用的系统组件（服务、库、模块）
+  - id: Module
+    label: 模块
+    description: 组件内部的逻辑模块（如 knowledge、workflow）
+  - id: API
+    label: 接口
+    description: 对外可调用的 API / 节点 / 工具
+  - id: Document
+    label: 文档切片
+    description: 知识库中的文档或 chunk（对齐 Coze RetrieveSlice）
+  - id: Constraint
+    label: 约束
+    description: 显式业务/技术约束（兼容、互斥、前置条件）
+  - id: PersonOrTeam
+    label: 团队或负责人
+    description: 可选；用于维护归属，MVP 可先不用实例
+  - id: Alias
+    label: 别名
+    description: 可选；也可用 Concept.aliases 字符串列表代替独立类
+
+properties:
+  # object properties (relations)
+  - id: partOf
+    label: 属于
+    domain: [Module, API]
+    range: [Component, Module]
+    description: 模块/接口从属于组件或父模块
+  - id: dependsOn
+    label: 依赖
+    domain: [Component, Module]
+    range: [Component, Module, API]
+    description: 运行或构建依赖
+  - id: implements
+    label: 实现
+    domain: [Module, Component]
+    range: [API, Concept]
+  - id: documentedIn
+    label: 文档见于
+    domain: [Concept, Component, Module, API, Constraint]
+    range: [Document]
+  - id: constrainedBy
+    label: 受约束于
+    domain: [Component, Module, API]
+    range: [Constraint]
+  - id: relatedTo
+    label: 相关
+    domain: [Concept, Component, Module, API]
+    range: [Concept, Component, Module, API]
+  - id: synonymOf
+    label: 同义于
+    domain: [Concept]
+    range: [Concept]
+    symmetric: true
+  - id: precedes
+    label: 前置
+    domain: [Module, API, Concept]
+    range: [Module, API, Concept]
+    description: 学习/调用/配置顺序上的前置关系（利于多跳）
+
+  # datatype properties
+  - id: name
+    label: 名称
+    domain: [Concept, Component, Module, API, Document, Constraint]
+    range: string
+    required: true
+  - id: aliases
+    label: 别名列表
+    domain: [Concept, Component, Module, API]
+    range: string[]
+  - id: description
+    label: 描述
+    domain: [Concept, Component, Module, API, Constraint, Document]
+    range: string
+  - id: chunk_id
+    label: 切片ID
+    domain: [Document]
+    range: string
+    required: true
+  - id: document_id
+    label: 文档ID
+    domain: [Document]
+    range: string
+  - id: severity
+    label: 约束级别
+    domain: [Constraint]
+    range: enum[info, warn, error]
+
+constraints:
+  - id: domain_range_enforced
+    type: domain_range
+    description: 任意关系三元组必须满足上表 domain/range，否则拒收入库
+  - id: no_self_depends
+    type: irreflexive
+    on: dependsOn
+  - id: documented_entities_need_doc
+    type: sparql_or_code
+    description: 若实体参与问答证据链，应至少有一条 documentedIn
+  - id: reject_unknown_relation
+    type: whitelist
+    description: 只允许 properties 白名单中的关系 id（防 schema drift）
+
+competency_questions:
+  - id: CQ1
+    text: 某 Module 属于哪个 Component？
+    hops: 1
+  - id: CQ2
+    text: 调用某 API 需要先满足哪些 Constraint？
+    hops: 2
+  - id: CQ3
+    text: Component A 依赖链上是否间接依赖 B？
+    hops: 2-3
+  - id: CQ4
+    text: 概念 X 的别名是否指向同一 Concept？
+    hops: 1
+  - id: CQ5
+    text: 某错误配置是否违反 Constraint（应拒答或明确违规）？
+    hops: 1-2
+    adversarial: true
+  - id: CQ6
+    text: 文档切片 S 支撑了哪些实体事实？
+    hops: 1
+  - id: CQ7
+    text: 学习/配置 Module M 的前置模块是什么？
+    hops: 1-2
+  - id: CQ8
+    text: 与 Concept Y relatedTo 且 documentedIn 同一文档的实体有哪些？
+    hops: 2
+  - id: CQ9
+    text: 无图路径支撑时是否拒答（相对纯向量乱答）？
+    hops: 0
+    adversarial: true
+  - id: CQ10
+    text: 并行检索后，图路径证据能否解释为何召回某切片？
+    hops: 2
+
+extraction_hints:
+  llm_output_schema:
+    entities:
+      - {id: string, type: class_id, name: string, aliases: [string], description: string}
+    triples:
+      - {subject: entity_id, predicate: property_id, object: entity_id_or_literal}
+    provenance:
+      chunk_id: string
+      document_id: string
+      quote: string
+  post_process:
+    - entity_linking_by_name_and_aliases
+    - validate_domain_range
+    - drop_or_quarantine_invalid_triples
