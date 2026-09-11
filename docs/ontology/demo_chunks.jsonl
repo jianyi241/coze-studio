@@ -1,0 +1,8 @@
+{"id": "chunk_r1", "document_id": "doc_retrieve", "text": "knowledgeSVC.Retrieve 先做查询重写，再并行执行向量、ES、NL2SQL 检索，最后经 RRF 重排并 packResults。"}
+{"id": "chunk_r2", "document_id": "doc_retrieve", "text": "ontologyRetrieveNode 可在 Parallel 中与 vector/ES/NL2SQL 并列；reRankNode 需从 resultMap 读取该路结果。"}
+{"id": "chunk_i1", "document_id": "doc_index", "text": "入库链路 indexDocument 最终调用 indexSlicesInSearchStores 写入 searchstore，成功后再 finalizeDocumentIndexing。"}
+{"id": "chunk_i2", "document_id": "doc_index", "text": "本体抽取挂钩应在 indexSlicesInSearchStores 成功之后执行；删除文档时需同步清理图中 provenance。"}
+{"id": "chunk_a1", "document_id": "doc_agent", "text": "Agent 通过 node_retriever 调用知识库检索，将召回切片打包进系统提示词的 knowledge 占位符。"}
+{"id": "chunk_e1", "document_id": "doc_eino", "text": "Eino Compose 提供 Chain 与 Parallel，用于编排 queryRewrite、多路检索与 reRank。"}
+{"id": "chunk_c1", "document_id": "doc_constraints", "text": "开源版 Agent 知识库目前以自动调用为主；ONTOLOGY_RAG_ENABLED 默认关闭，开启后才走图召回。"}
+{"id": "chunk_c2", "document_id": "doc_constraints", "text": "非法三元组（不满足 domain/range 或关系不在白名单）必须拒收入库，不得写入 OntologyStore。"}
