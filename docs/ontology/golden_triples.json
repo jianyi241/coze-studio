@@ -1,0 +1,603 @@
+{
+  "ontology_id": "coze.lite.software_kb",
+  "version": "0.1.0",
+  "knowledge_id": "demo_software_kb",
+  "description": "Golden seed for Software Knowledge Lite (Coze Studio KB domain). Use for M3 before extract pipeline is live.",
+  "documents": [
+    {
+      "id": "doc_retrieve",
+      "title": "知识库检索流水线"
+    },
+    {
+      "id": "doc_index",
+      "title": "文档入库与切片索引"
+    },
+    {
+      "id": "doc_agent",
+      "title": "Agent 知识召回"
+    },
+    {
+      "id": "doc_eino",
+      "title": "Eino 编排与多路召回"
+    },
+    {
+      "id": "doc_constraints",
+      "title": "检索配置约束"
+    }
+  ],
+  "chunks": [
+    {
+      "id": "chunk_r1",
+      "document_id": "doc_retrieve",
+      "text": "knowledgeSVC.Retrieve 先做查询重写，再并行执行向量、ES、NL2SQL 检索，最后经 RRF 重排并 packResults。"
+    },
+    {
+      "id": "chunk_r2",
+      "document_id": "doc_retrieve",
+      "text": "ontologyRetrieveNode 可在 Parallel 中与 vector/ES/NL2SQL 并列；reRankNode 需从 resultMap 读取该路结果。"
+    },
+    {
+      "id": "chunk_i1",
+      "document_id": "doc_index",
+      "text": "入库链路 indexDocument 最终调用 indexSlicesInSearchStores 写入 searchstore，成功后再 finalizeDocumentIndexing。"
+    },
+    {
+      "id": "chunk_i2",
+      "document_id": "doc_index",
+      "text": "本体抽取挂钩应在 indexSlicesInSearchStores 成功之后执行；删除文档时需同步清理图中 provenance。"
+    },
+    {
+      "id": "chunk_a1",
+      "document_id": "doc_agent",
+      "text": "Agent 通过 node_retriever 调用知识库检索，将召回切片打包进系统提示词的 knowledge 占位符。"
+    },
+    {
+      "id": "chunk_e1",
+      "document_id": "doc_eino",
+      "text": "Eino Compose 提供 Chain 与 Parallel，用于编排 queryRewrite、多路检索与 reRank。"
+    },
+    {
+      "id": "chunk_c1",
+      "document_id": "doc_constraints",
+      "text": "开源版 Agent 知识库目前以自动调用为主；ONTOLOGY_RAG_ENABLED 默认关闭，开启后才走图召回。"
+    },
+    {
+      "id": "chunk_c2",
+      "document_id": "doc_constraints",
+      "text": "非法三元组（不满足 domain/range 或关系不在白名单）必须拒收入库，不得写入 OntologyStore。"
+    }
+  ],
+  "entities": [
+    {
+      "id": "comp_coze_studio",
+      "type": "Component",
+      "name": "Coze Studio",
+      "aliases": [
+        "扣子开源版",
+        "coze-studio"
+      ],
+      "description": "开源 AI Agent 开发平台"
+    },
+    {
+      "id": "comp_eino",
+      "type": "Component",
+      "name": "Eino",
+      "aliases": [
+        "cloudwego/eino"
+      ],
+      "description": "Agent/工作流运行时与编排框架"
+    },
+    {
+      "id": "mod_knowledge",
+      "type": "Module",
+      "name": "knowledge",
+      "aliases": [
+        "知识库模块",
+        "domain/knowledge"
+      ],
+      "description": "知识入库与检索领域模块"
+    },
+    {
+      "id": "mod_agent",
+      "type": "Module",
+      "name": "agent",
+      "aliases": [
+        "singleagent",
+        "智能体模块"
+      ],
+      "description": "单 Agent 编排与召回"
+    },
+    {
+      "id": "mod_workflow",
+      "type": "Module",
+      "name": "workflow",
+      "aliases": [
+        "工作流模块"
+      ],
+      "description": "工作流节点与执行"
+    },
+    {
+      "id": "api_retrieve",
+      "type": "API",
+      "name": "Retrieve",
+      "aliases": [
+        "knowledgeSVC.Retrieve",
+        "知识检索接口"
+      ],
+      "description": "知识库检索入口"
+    },
+    {
+      "id": "api_ontology_node",
+      "type": "API",
+      "name": "ontologyRetrieveNode",
+      "aliases": [
+        "本体召回节点"
+      ],
+      "description": "基于图的并行召回节点"
+    },
+    {
+      "id": "api_index_slices",
+      "type": "API",
+      "name": "indexSlicesInSearchStores",
+      "aliases": [
+        "切片索引写入"
+      ],
+      "description": "将切片写入向量/ES 等 searchstore"
+    },
+    {
+      "id": "api_node_retriever",
+      "type": "API",
+      "name": "node_retriever",
+      "aliases": [
+        "Agent 检索节点"
+      ],
+      "description": "Agent 图中的知识召回 lambda"
+    },
+    {
+      "id": "concept_rrf",
+      "type": "Concept",
+      "name": "RRF",
+      "aliases": [
+        "Reciprocal Rank Fusion",
+        "倒数排名融合"
+      ],
+      "description": "多路召回结果融合算法"
+    },
+    {
+      "id": "concept_hybrid_rag",
+      "type": "Concept",
+      "name": "Hybrid RAG",
+      "aliases": [
+        "混合检索",
+        "向量+本体 RAG"
+      ],
+      "description": "向量/全文/图等多路混合检索"
+    },
+    {
+      "id": "concept_query_rewrite",
+      "type": "Concept",
+      "name": "Query Rewrite",
+      "aliases": [
+        "查询重写",
+        "queryRewriteNode"
+      ],
+      "description": "结合上下文改写用户查询"
+    },
+    {
+      "id": "cstr_flag_default_off",
+      "type": "Constraint",
+      "name": "ONTOLOGY_RAG_ENABLED_default_off",
+      "aliases": [
+        "本体开关默认关"
+      ],
+      "description": "ONTOLOGY_RAG_ENABLED 默认 false，关闭时行为与上游一致",
+      "severity": "error"
+    },
+    {
+      "id": "cstr_reject_illegal_triple",
+      "type": "Constraint",
+      "name": "reject_illegal_triple",
+      "aliases": [
+        "拒绝非法三元组"
+      ],
+      "description": "不满足 domain/range 或非白名单关系的三元组不得入库",
+      "severity": "error"
+    },
+    {
+      "id": "cstr_hook_after_index",
+      "type": "Constraint",
+      "name": "extract_after_searchstore",
+      "aliases": [
+        "索引成功后抽取"
+      ],
+      "description": "本体抽取必须在 indexSlicesInSearchStores 成功之后",
+      "severity": "warn"
+    },
+    {
+      "id": "docent_r1",
+      "type": "Document",
+      "name": "chunk_r1",
+      "chunk_id": "chunk_r1",
+      "document_id": "doc_retrieve",
+      "description": "Retrieve 流水线说明切片"
+    },
+    {
+      "id": "docent_r2",
+      "type": "Document",
+      "name": "chunk_r2",
+      "chunk_id": "chunk_r2",
+      "document_id": "doc_retrieve",
+      "description": "ontology 并行节点说明切片"
+    },
+    {
+      "id": "docent_i1",
+      "type": "Document",
+      "name": "chunk_i1",
+      "chunk_id": "chunk_i1",
+      "document_id": "doc_index",
+      "description": "入库索引说明切片"
+    },
+    {
+      "id": "docent_i2",
+      "type": "Document",
+      "name": "chunk_i2",
+      "chunk_id": "chunk_i2",
+      "document_id": "doc_index",
+      "description": "抽取挂钩说明切片"
+    },
+    {
+      "id": "docent_a1",
+      "type": "Document",
+      "name": "chunk_a1",
+      "chunk_id": "chunk_a1",
+      "document_id": "doc_agent",
+      "description": "Agent 召回说明切片"
+    },
+    {
+      "id": "docent_e1",
+      "type": "Document",
+      "name": "chunk_e1",
+      "chunk_id": "chunk_e1",
+      "document_id": "doc_eino",
+      "description": "Eino 编排说明切片"
+    },
+    {
+      "id": "docent_c1",
+      "type": "Document",
+      "name": "chunk_c1",
+      "chunk_id": "chunk_c1",
+      "document_id": "doc_constraints",
+      "description": "开关约束说明切片"
+    },
+    {
+      "id": "docent_c2",
+      "type": "Document",
+      "name": "chunk_c2",
+      "chunk_id": "chunk_c2",
+      "document_id": "doc_constraints",
+      "description": "非法三元组约束切片"
+    }
+  ],
+  "triples": [
+    {
+      "subject": "mod_knowledge",
+      "predicate": "partOf",
+      "object": "comp_coze_studio",
+      "provenance": {
+        "chunk_id": "chunk_r1",
+        "document_id": "doc_retrieve",
+        "quote": "knowledgeSVC.Retrieve"
+      }
+    },
+    {
+      "subject": "mod_agent",
+      "predicate": "partOf",
+      "object": "comp_coze_studio",
+      "provenance": {
+        "chunk_id": "chunk_a1",
+        "document_id": "doc_agent",
+        "quote": "Agent 通过 node_retriever"
+      }
+    },
+    {
+      "subject": "mod_workflow",
+      "predicate": "partOf",
+      "object": "comp_coze_studio",
+      "provenance": {
+        "chunk_id": "chunk_a1",
+        "document_id": "doc_agent",
+        "quote": "工作流与智能体同属平台"
+      }
+    },
+    {
+      "subject": "mod_knowledge",
+      "predicate": "dependsOn",
+      "object": "comp_eino",
+      "provenance": {
+        "chunk_id": "chunk_e1",
+        "document_id": "doc_eino",
+        "quote": "Eino Compose 提供 Chain 与 Parallel"
+      }
+    },
+    {
+      "subject": "mod_agent",
+      "predicate": "dependsOn",
+      "object": "mod_knowledge",
+      "provenance": {
+        "chunk_id": "chunk_a1",
+        "document_id": "doc_agent",
+        "quote": "调用知识库检索"
+      }
+    },
+    {
+      "subject": "api_retrieve",
+      "predicate": "partOf",
+      "object": "mod_knowledge",
+      "provenance": {
+        "chunk_id": "chunk_r1",
+        "document_id": "doc_retrieve",
+        "quote": "knowledgeSVC.Retrieve"
+      }
+    },
+    {
+      "subject": "api_ontology_node",
+      "predicate": "partOf",
+      "object": "mod_knowledge",
+      "provenance": {
+        "chunk_id": "chunk_r2",
+        "document_id": "doc_retrieve",
+        "quote": "ontologyRetrieveNode 可在 Parallel 中"
+      }
+    },
+    {
+      "subject": "api_index_slices",
+      "predicate": "partOf",
+      "object": "mod_knowledge",
+      "provenance": {
+        "chunk_id": "chunk_i1",
+        "document_id": "doc_index",
+        "quote": "indexSlicesInSearchStores"
+      }
+    },
+    {
+      "subject": "api_node_retriever",
+      "predicate": "partOf",
+      "object": "mod_agent",
+      "provenance": {
+        "chunk_id": "chunk_a1",
+        "document_id": "doc_agent",
+        "quote": "node_retriever"
+      }
+    },
+    {
+      "subject": "mod_knowledge",
+      "predicate": "implements",
+      "object": "api_retrieve",
+      "provenance": {
+        "chunk_id": "chunk_r1",
+        "document_id": "doc_retrieve",
+        "quote": "Retrieve 先做查询重写"
+      }
+    },
+    {
+      "subject": "mod_knowledge",
+      "predicate": "implements",
+      "object": "concept_hybrid_rag",
+      "provenance": {
+        "chunk_id": "chunk_r1",
+        "document_id": "doc_retrieve",
+        "quote": "并行执行向量、ES、NL2SQL"
+      }
+    },
+    {
+      "subject": "api_retrieve",
+      "predicate": "relatedTo",
+      "object": "concept_query_rewrite",
+      "provenance": {
+        "chunk_id": "chunk_r1",
+        "document_id": "doc_retrieve",
+        "quote": "先做查询重写"
+      }
+    },
+    {
+      "subject": "api_retrieve",
+      "predicate": "relatedTo",
+      "object": "concept_rrf",
+      "provenance": {
+        "chunk_id": "chunk_r1",
+        "document_id": "doc_retrieve",
+        "quote": "经 RRF 重排"
+      }
+    },
+    {
+      "subject": "api_ontology_node",
+      "predicate": "relatedTo",
+      "object": "concept_hybrid_rag",
+      "provenance": {
+        "chunk_id": "chunk_r2",
+        "document_id": "doc_retrieve",
+        "quote": "与 vector/ES/NL2SQL 并列"
+      }
+    },
+    {
+      "subject": "concept_rrf",
+      "predicate": "relatedTo",
+      "object": "concept_hybrid_rag",
+      "provenance": {
+        "chunk_id": "chunk_r1",
+        "document_id": "doc_retrieve",
+        "quote": "RRF 用于多路召回结果融合，服务于 Hybrid RAG"
+      }
+    },
+    {
+      "subject": "concept_query_rewrite",
+      "predicate": "precedes",
+      "object": "api_retrieve",
+      "provenance": {
+        "chunk_id": "chunk_r1",
+        "document_id": "doc_retrieve",
+        "quote": "先做查询重写，再并行执行"
+      }
+    },
+    {
+      "subject": "api_index_slices",
+      "predicate": "precedes",
+      "object": "api_ontology_node",
+      "provenance": {
+        "chunk_id": "chunk_i2",
+        "document_id": "doc_index",
+        "quote": "索引成功之后才做本体抽取/图召回数据准备"
+      }
+    },
+    {
+      "subject": "api_retrieve",
+      "predicate": "constrainedBy",
+      "object": "cstr_flag_default_off",
+      "provenance": {
+        "chunk_id": "chunk_c1",
+        "document_id": "doc_constraints",
+        "quote": "ONTOLOGY_RAG_ENABLED 默认关闭"
+      }
+    },
+    {
+      "subject": "api_ontology_node",
+      "predicate": "constrainedBy",
+      "object": "cstr_flag_default_off",
+      "provenance": {
+        "chunk_id": "chunk_c1",
+        "document_id": "doc_constraints",
+        "quote": "开启后才走图召回"
+      }
+    },
+    {
+      "subject": "api_index_slices",
+      "predicate": "constrainedBy",
+      "object": "cstr_hook_after_index",
+      "provenance": {
+        "chunk_id": "chunk_i2",
+        "document_id": "doc_index",
+        "quote": "挂钩应在 indexSlicesInSearchStores 成功之后"
+      }
+    },
+    {
+      "subject": "mod_knowledge",
+      "predicate": "constrainedBy",
+      "object": "cstr_reject_illegal_triple",
+      "provenance": {
+        "chunk_id": "chunk_c2",
+        "document_id": "doc_constraints",
+        "quote": "非法三元组必须拒收入库"
+      }
+    },
+    {
+      "subject": "mod_knowledge",
+      "predicate": "documentedIn",
+      "object": "docent_r1",
+      "provenance": {
+        "chunk_id": "chunk_r1",
+        "document_id": "doc_retrieve",
+        "quote": "knowledgeSVC.Retrieve"
+      }
+    },
+    {
+      "subject": "api_retrieve",
+      "predicate": "documentedIn",
+      "object": "docent_r1",
+      "provenance": {
+        "chunk_id": "chunk_r1",
+        "document_id": "doc_retrieve",
+        "quote": "查询重写…RRF"
+      }
+    },
+    {
+      "subject": "api_ontology_node",
+      "predicate": "documentedIn",
+      "object": "docent_r2",
+      "provenance": {
+        "chunk_id": "chunk_r2",
+        "document_id": "doc_retrieve",
+        "quote": "ontologyRetrieveNode"
+      }
+    },
+    {
+      "subject": "api_index_slices",
+      "predicate": "documentedIn",
+      "object": "docent_i1",
+      "provenance": {
+        "chunk_id": "chunk_i1",
+        "document_id": "doc_index",
+        "quote": "indexSlicesInSearchStores"
+      }
+    },
+    {
+      "subject": "cstr_hook_after_index",
+      "predicate": "documentedIn",
+      "object": "docent_i2",
+      "provenance": {
+        "chunk_id": "chunk_i2",
+        "document_id": "doc_index",
+        "quote": "成功之后执行"
+      }
+    },
+    {
+      "subject": "api_node_retriever",
+      "predicate": "documentedIn",
+      "object": "docent_a1",
+      "provenance": {
+        "chunk_id": "chunk_a1",
+        "document_id": "doc_agent",
+        "quote": "node_retriever"
+      }
+    },
+    {
+      "subject": "comp_eino",
+      "predicate": "documentedIn",
+      "object": "docent_e1",
+      "provenance": {
+        "chunk_id": "chunk_e1",
+        "document_id": "doc_eino",
+        "quote": "Eino Compose"
+      }
+    },
+    {
+      "subject": "cstr_flag_default_off",
+      "predicate": "documentedIn",
+      "object": "docent_c1",
+      "provenance": {
+        "chunk_id": "chunk_c1",
+        "document_id": "doc_constraints",
+        "quote": "默认关闭"
+      }
+    },
+    {
+      "subject": "cstr_reject_illegal_triple",
+      "predicate": "documentedIn",
+      "object": "docent_c2",
+      "provenance": {
+        "chunk_id": "chunk_c2",
+        "document_id": "doc_constraints",
+        "quote": "拒收入库"
+      }
+    }
+  ],
+  "negative_examples_for_validator": [
+    {
+      "subject": "api_retrieve",
+      "predicate": "dependsOn",
+      "object": "comp_eino",
+      "reason": "dependsOn domain is Component|Module, not API"
+    },
+    {
+      "subject": "mod_knowledge",
+      "predicate": "partOf",
+      "object": "concept_rrf",
+      "reason": "partOf range is Component|Module, not Concept"
+    },
+    {
+      "subject": "comp_coze_studio",
+      "predicate": "fooBar",
+      "object": "comp_eino",
+      "reason": "predicate not in whitelist"
+    }
+  ]
+}
