@@ -1,0 +1,299 @@
+{
+  "ontology_id": "coze.lite.software_kb",
+  "version": "0.1.0",
+  "knowledge_id": "demo_software_kb",
+  "baselines": ["vector_only", "vector_plus_ontology"],
+  "metrics": ["answer_accuracy", "faithfulness", "multihop_accuracy", "explainability_path_rate", "illegal_triple_reject_rate"],
+  "notes": "Expand CQ1–CQ10 into runnable items. expected_evidence_paths use entity ids from golden_triples.json. For vector_only, multihop/adversarial items are expected weaker.",
+  "questions": [
+    {
+      "id": "Q1",
+      "cq": "CQ1",
+      "hops": 1,
+      "type": "single_hop",
+      "question": "knowledge 模块属于哪个组件？",
+      "aliases": ["domain/knowledge 从属于什么？"],
+      "expected_answer": "Coze Studio",
+      "expected_entities": ["mod_knowledge", "comp_coze_studio"],
+      "expected_evidence_paths": [["mod_knowledge", "partOf", "comp_coze_studio"]],
+      "expected_chunk_ids": ["chunk_r1"]
+    },
+    {
+      "id": "Q2",
+      "cq": "CQ1",
+      "hops": 1,
+      "type": "single_hop",
+      "question": "Retrieve 接口属于哪个模块？",
+      "expected_answer": "knowledge",
+      "expected_entities": ["api_retrieve", "mod_knowledge"],
+      "expected_evidence_paths": [["api_retrieve", "partOf", "mod_knowledge"]],
+      "expected_chunk_ids": ["chunk_r1"]
+    },
+    {
+      "id": "Q3",
+      "cq": "CQ4",
+      "hops": 1,
+      "type": "single_hop",
+      "question": "「倒数排名融合」指的是哪个概念？",
+      "expected_answer": "RRF",
+      "expected_entities": ["concept_rrf"],
+      "expected_evidence_paths": [],
+      "expected_chunk_ids": ["chunk_r1"],
+      "linking": {"alias": "倒数排名融合", "entity_id": "concept_rrf"}
+    },
+    {
+      "id": "Q4",
+      "cq": "CQ6",
+      "hops": 1,
+      "type": "single_hop",
+      "question": "切片 chunk_r2 主要支撑了哪一个 API 实体？",
+      "expected_answer": "ontologyRetrieveNode",
+      "expected_entities": ["api_ontology_node", "docent_r2"],
+      "expected_evidence_paths": [["api_ontology_node", "documentedIn", "docent_r2"]],
+      "expected_chunk_ids": ["chunk_r2"]
+    },
+    {
+      "id": "Q5",
+      "cq": "CQ7",
+      "hops": 1,
+      "type": "single_hop",
+      "question": "在 Retrieve 流水线里，查询重写相对检索入口的顺序关系是什么？",
+      "expected_answer": "Query Rewrite 前置于 Retrieve",
+      "expected_entities": ["concept_query_rewrite", "api_retrieve"],
+      "expected_evidence_paths": [["concept_query_rewrite", "precedes", "api_retrieve"]],
+      "expected_chunk_ids": ["chunk_r1"]
+    },
+    {
+      "id": "Q6",
+      "cq": "CQ1",
+      "hops": 1,
+      "type": "single_hop",
+      "question": "node_retriever 属于哪个模块？",
+      "expected_answer": "agent",
+      "expected_entities": ["api_node_retriever", "mod_agent"],
+      "expected_evidence_paths": [["api_node_retriever", "partOf", "mod_agent"]],
+      "expected_chunk_ids": ["chunk_a1"]
+    },
+    {
+      "id": "Q7",
+      "cq": "CQ6",
+      "hops": 1,
+      "type": "single_hop",
+      "question": "Eino 组件在哪篇文档切片里被说明？",
+      "expected_answer": "chunk_e1 / doc_eino",
+      "expected_entities": ["comp_eino", "docent_e1"],
+      "expected_evidence_paths": [["comp_eino", "documentedIn", "docent_e1"]],
+      "expected_chunk_ids": ["chunk_e1"]
+    },
+    {
+      "id": "Q8",
+      "cq": "CQ2",
+      "hops": 2,
+      "type": "multi_hop",
+      "question": "调用 ontologyRetrieveNode 需要满足哪些约束？",
+      "expected_answer": "ONTOLOGY_RAG_ENABLED 默认关闭，开启后才走图召回",
+      "expected_entities": ["api_ontology_node", "cstr_flag_default_off"],
+      "expected_evidence_paths": [["api_ontology_node", "constrainedBy", "cstr_flag_default_off"]],
+      "expected_chunk_ids": ["chunk_c1", "chunk_r2"]
+    },
+    {
+      "id": "Q9",
+      "cq": "CQ2",
+      "hops": 2,
+      "type": "multi_hop",
+      "question": "Retrieve 接口受哪些约束影响（给出约束名）？",
+      "expected_answer": "ONTOLOGY_RAG_ENABLED_default_off",
+      "expected_entities": ["api_retrieve", "cstr_flag_default_off"],
+      "expected_evidence_paths": [["api_retrieve", "constrainedBy", "cstr_flag_default_off"]],
+      "expected_chunk_ids": ["chunk_c1"]
+    },
+    {
+      "id": "Q10",
+      "cq": "CQ3",
+      "hops": 2,
+      "type": "multi_hop",
+      "question": "agent 模块是否间接依赖 Eino？请给出路径。",
+      "expected_answer": "是：agent → knowledge → Eino",
+      "expected_entities": ["mod_agent", "mod_knowledge", "comp_eino"],
+      "expected_evidence_paths": [
+        ["mod_agent", "dependsOn", "mod_knowledge"],
+        ["mod_knowledge", "dependsOn", "comp_eino"]
+      ],
+      "expected_chunk_ids": ["chunk_a1", "chunk_e1"]
+    },
+    {
+      "id": "Q11",
+      "cq": "CQ3",
+      "hops": 2,
+      "type": "multi_hop",
+      "question": "knowledge 模块依赖哪个外部组件来做编排？",
+      "expected_answer": "Eino",
+      "expected_entities": ["mod_knowledge", "comp_eino"],
+      "expected_evidence_paths": [["mod_knowledge", "dependsOn", "comp_eino"]],
+      "expected_chunk_ids": ["chunk_e1"]
+    },
+    {
+      "id": "Q12",
+      "cq": "CQ8",
+      "hops": 2,
+      "type": "multi_hop",
+      "question": "与 Hybrid RAG 相关、且有文档支撑的 API 有哪些？",
+      "expected_answer": "ontologyRetrieveNode（以及 Retrieve 实现 Hybrid RAG）",
+      "expected_entities": ["concept_hybrid_rag", "api_ontology_node", "mod_knowledge"],
+      "expected_evidence_paths": [
+        ["api_ontology_node", "relatedTo", "concept_hybrid_rag"],
+        ["api_ontology_node", "documentedIn", "docent_r2"]
+      ],
+      "expected_chunk_ids": ["chunk_r2", "chunk_r1"]
+    },
+    {
+      "id": "Q13",
+      "cq": "CQ7",
+      "hops": 2,
+      "type": "multi_hop",
+      "question": "要从索引写入走到本体召回数据可用，配置/调用顺序上应先完成什么？",
+      "expected_answer": "先成功执行 indexSlicesInSearchStores（其 precedes ontologyRetrieveNode）",
+      "expected_entities": ["api_index_slices", "api_ontology_node", "cstr_hook_after_index"],
+      "expected_evidence_paths": [
+        ["api_index_slices", "precedes", "api_ontology_node"],
+        ["api_index_slices", "constrainedBy", "cstr_hook_after_index"]
+      ],
+      "expected_chunk_ids": ["chunk_i2", "chunk_i1"]
+    },
+    {
+      "id": "Q14",
+      "cq": "CQ10",
+      "hops": 2,
+      "type": "multi_hop",
+      "question": "为什么重排阶段可能用到 RRF？请用 Retrieve 相关路径解释。",
+      "expected_answer": "Retrieve 与 RRF 相关，流水线在多路召回后经 RRF 重排",
+      "expected_entities": ["api_retrieve", "concept_rrf"],
+      "expected_evidence_paths": [["api_retrieve", "relatedTo", "concept_rrf"]],
+      "expected_chunk_ids": ["chunk_r1"],
+      "require_explainability": true
+    },
+    {
+      "id": "Q15",
+      "cq": "CQ3",
+      "hops": 2,
+      "type": "multi_hop",
+      "question": "workflow 模块属于 Coze Studio 吗？依据是什么？",
+      "expected_answer": "属于；workflow partOf Coze Studio",
+      "expected_entities": ["mod_workflow", "comp_coze_studio"],
+      "expected_evidence_paths": [["mod_workflow", "partOf", "comp_coze_studio"]],
+      "expected_chunk_ids": ["chunk_a1"]
+    },
+    {
+      "id": "Q16",
+      "cq": "CQ2",
+      "hops": 2,
+      "type": "multi_hop",
+      "question": "knowledge 模块在非法三元组方面受到什么约束？",
+      "expected_answer": "reject_illegal_triple：非法三元组必须拒收入库",
+      "expected_entities": ["mod_knowledge", "cstr_reject_illegal_triple"],
+      "expected_evidence_paths": [["mod_knowledge", "constrainedBy", "cstr_reject_illegal_triple"]],
+      "expected_chunk_ids": ["chunk_c2"]
+    },
+    {
+      "id": "Q17",
+      "cq": "CQ8",
+      "hops": 2,
+      "type": "multi_hop",
+      "question": "Retrieve 与 Query Rewrite 的关系是什么，文档依据在哪？",
+      "expected_answer": "relatedTo；依据 chunk_r1",
+      "expected_entities": ["api_retrieve", "concept_query_rewrite", "docent_r1"],
+      "expected_evidence_paths": [
+        ["api_retrieve", "relatedTo", "concept_query_rewrite"],
+        ["api_retrieve", "documentedIn", "docent_r1"]
+      ],
+      "expected_chunk_ids": ["chunk_r1"]
+    },
+    {
+      "id": "Q18",
+      "cq": "CQ5",
+      "hops": 1,
+      "type": "adversarial",
+      "question": "能否把三元组 (Retrieve, dependsOn, Eino) 写入本体库？为什么？",
+      "expected_answer": "不能。dependsOn 的 domain 不含 API，属于非法三元组，应拒绝。",
+      "expected_entities": ["cstr_reject_illegal_triple"],
+      "expected_evidence_paths": [["mod_knowledge", "constrainedBy", "cstr_reject_illegal_triple"]],
+      "expected_chunk_ids": ["chunk_c2"],
+      "expect_reject_or_refuse": true,
+      "negative_triple": {"subject": "api_retrieve", "predicate": "dependsOn", "object": "comp_eino"}
+    },
+    {
+      "id": "Q19",
+      "cq": "CQ9",
+      "hops": 0,
+      "type": "adversarial",
+      "question": "Milvus 是否 partOf knowledge 模块？",
+      "expected_answer": "图中无路径，应拒答或声明证据不足（不要编造）。",
+      "expected_entities": [],
+      "expected_evidence_paths": [],
+      "expected_chunk_ids": [],
+      "expect_refuse": true,
+      "unanswerable": true
+    },
+    {
+      "id": "Q20",
+      "cq": "CQ9",
+      "hops": 0,
+      "type": "adversarial",
+      "question": "ontologyRetrieveNode 是否 dependsOn workflow 模块？",
+      "expected_answer": "无此三元组/路径，应拒答。",
+      "expected_entities": ["api_ontology_node", "mod_workflow"],
+      "expected_evidence_paths": [],
+      "expect_refuse": true,
+      "unanswerable": true
+    },
+    {
+      "id": "Q21",
+      "cq": "CQ5",
+      "hops": 1,
+      "type": "adversarial",
+      "question": "若抽取出 predicate=fooBar 的边，系统应如何处理？",
+      "expected_answer": "非白名单关系，拒绝入库。",
+      "expected_entities": ["cstr_reject_illegal_triple"],
+      "expected_evidence_paths": [["mod_knowledge", "constrainedBy", "cstr_reject_illegal_triple"]],
+      "expected_chunk_ids": ["chunk_c2"],
+      "expect_reject_or_refuse": true
+    },
+    {
+      "id": "Q22",
+      "cq": "CQ4",
+      "hops": 1,
+      "type": "single_hop",
+      "question": "「扣子开源版」和 Coze Studio 是不是同一组件？",
+      "expected_answer": "是，别名指向 comp_coze_studio",
+      "expected_entities": ["comp_coze_studio"],
+      "linking": {"alias": "扣子开源版", "entity_id": "comp_coze_studio"},
+      "expected_chunk_ids": ["chunk_r1"]
+    },
+    {
+      "id": "Q23",
+      "cq": "CQ10",
+      "hops": 2,
+      "type": "multi_hop",
+      "question": "请解释为何可以说 knowledge 实现了 Hybrid RAG，并给出文档切片。",
+      "expected_answer": "mod_knowledge implements concept_hybrid_rag，文档见于 chunk_r1",
+      "expected_entities": ["mod_knowledge", "concept_hybrid_rag", "docent_r1"],
+      "expected_evidence_paths": [
+        ["mod_knowledge", "implements", "concept_hybrid_rag"],
+        ["mod_knowledge", "documentedIn", "docent_r1"]
+      ],
+      "expected_chunk_ids": ["chunk_r1"],
+      "require_explainability": true
+    },
+    {
+      "id": "Q24",
+      "cq": "CQ2",
+      "hops": 2,
+      "type": "multi_hop",
+      "question": "indexSlicesInSearchStores 除了属于 knowledge，还受什么约束？",
+      "expected_answer": "extract_after_searchstore：抽取必须在其成功之后",
+      "expected_entities": ["api_index_slices", "cstr_hook_after_index"],
+      "expected_evidence_paths": [["api_index_slices", "constrainedBy", "cstr_hook_after_index"]],
+      "expected_chunk_ids": ["chunk_i2"]
+    }
+  ]
+}
